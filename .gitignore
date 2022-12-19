@@ -1,0 +1,11 @@
+ProjectSettings/
+ServerData/
+.vsconfig
+UserSettings/
+.vs/
+/Library
+Logs/
+Temp/
+obj/
+*.csproj
+*.sln
