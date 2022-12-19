@@ -1,0 +1,6 @@
+Id,EventName,Key1,Key2,Key3,Description
+1,OnDemoEvent1,AlphaNum,,,任意按键
+2,OnDemoEvent2,Alphabet,,,数字按键
+3,OnDemoEvent3,LeftAlt,AlphaNum,,字母按键
+4,OnDemoEvent4,LeftAlt,Alphabet,,两个按键组合
+5,OnDemoEvent5,LeftControl,Space,AnyKey,三个按键组合

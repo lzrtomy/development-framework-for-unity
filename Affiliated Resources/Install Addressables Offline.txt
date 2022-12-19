@@ -1,0 +1,28 @@
+Unity 201x:
+C:\Users\UserName\AppData\Local\Unity\cache\packages\packages.unity.com\
+
+.../Packages/manifest.json
+    "com.unity.addressables": "1.18.19",
+
+Unity 202x:
+
+C:\Users\UserName\AppData\Local\Unity\cache\npm\packages.unity.com\
+
+.../Packages/manifest.json
+    "com.unity.addressables": "1.18.19",
+
+.../Packages/packages-lock.json
+	  "com.unity.addressables": {
+      "version": "1.18.19",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.scriptablebuildpipeline": "1.19.2",
+        "com.unity.modules.assetbundle": "1.0.0",
+        "com.unity.modules.imageconversion": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
