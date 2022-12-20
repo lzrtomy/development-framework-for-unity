@@ -1,4 +1,7 @@
-Assets/ThirdPartySDKs/
+Assets/ThirdPartySDKs/Best HTTP/
+Assets/ThirdPartySDKs/Best HTTP.meta
+Assets/ThirdPartySDKs/ThirdPartySDKPackages/
+Assets/ThirdPartySDKs/ThirdPartySDKPackages.meta
 ProjectSettings/
 ServerData/
 .vsconfig
