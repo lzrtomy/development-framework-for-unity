@@ -21,10 +21,6 @@ namespace Company.NewApp
 
         void Update()
         {
-            if (!string.IsNullOrEmpty(Input.inputString))
-            {
-                Debug.Log("input:" + Input.inputString);
-            }
             if (!CheckTrippleKeyInput())
             {
                 if (!CheckDoubleKeyInput())

@@ -18,6 +18,8 @@ namespace Company.HttpWebRequest
 
         //请求成功回调
         public delegate void RequestCompleteHandler<T>(T result);
+        public delegate void RequestCompleteHandler<T1, T2>(T1 result1, T2 result2);
+        public delegate void RequestCompleteHandler<T1, T2, T3>(T1 result1, T2 result2, T3 result3);
         protected Delegate m_CompleteEvent;
 
         //请求失败回调
@@ -143,12 +145,63 @@ namespace Company.HttpWebRequest
         /// <summary>
         /// 发送请求成功的事件
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="result"></param>
         protected virtual void SendCompleteEvent<T>(T result) 
         {
-            RequestCompleteHandler<T> onRequestComplete = m_CompleteEvent as RequestCompleteHandler<T>;
-            onRequestComplete?.Invoke(result);
+            if (m_CompleteEvent is RequestCompleteHandler<T>)
+            {
+                RequestCompleteHandler<T> onRequestComplete = m_CompleteEvent as RequestCompleteHandler<T>;
+                onRequestComplete?.Invoke(result);
+            }
+            else
+            {
+                Debug.LogError("[HttpRequestBase] Failed to send complete event, since event type is wrong!");
+            }
+            m_Task.RemoveTaskFromManager();
+        }
 
+        /// <summary>
+        /// 发送请求成功的事件
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="result1"></param>
+        /// <param name="result2"></param>
+        protected virtual void SendCompleteEvent<T1, T2>(T1 result1, T2 result2)
+        {
+            if (m_CompleteEvent is RequestCompleteHandler<T1, T2>)
+            {
+                RequestCompleteHandler<T1, T2> onRequestComplete = m_CompleteEvent as RequestCompleteHandler<T1, T2>;
+                onRequestComplete?.Invoke(result1, result2);
+            }
+            else
+            {
+                Debug.LogError("[HttpRequestBase] Failed to send complete event, since event type is wrong!");
+            }
+            m_Task.RemoveTaskFromManager();
+        }
+
+        /// <summary>
+        /// 发送请求成功的事件
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="result1"></param>
+        /// <param name="result2"></param>
+        /// <param name="result3"></param>
+        protected virtual void SendCompleteEvent<T1, T2, T3>(T1 result1, T2 result2, T3 result3)
+        {
+            if (m_CompleteEvent is RequestCompleteHandler<T1, T2, T3>)
+            {
+                RequestCompleteHandler<T1, T2, T3> onRequestComplete = m_CompleteEvent as RequestCompleteHandler<T1, T2, T3>;
+                onRequestComplete?.Invoke(result1, result2, result3);
+            }
+            else
+            {
+                Debug.LogError("[HttpRequestBase] Failed to send complete event, since event type is wrong!");
+            }
             m_Task.RemoveTaskFromManager();
         }
 
