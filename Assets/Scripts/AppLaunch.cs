@@ -71,7 +71,6 @@ namespace Company.NewApp
 
             //示例配置表
             DataModelManager.Instance.AddDataModel<ExampleEntityModel>();
-
             DataModelManager.Instance.AddDataModel<HotkeyEntityModel>();
             DataModelManager.Instance.AddDataModel<LevelEntityModel>();
 
