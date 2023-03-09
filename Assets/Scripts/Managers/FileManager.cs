@@ -52,60 +52,33 @@ namespace Company.NewApp
             }
         }
 
-        private string m_FromDirectory
-        {
-            get
-            {
-#if UNITY_EDITOR
-                return "file://" + Application.streamingAssetsPath + "/";
-#elif UNITY_ANDROID && !UNITY_EDITOR
-        return Application.streamingAssetsPath + "/";  //"jar: file://" + Application.dataPath + "!/assets/";
-#elif UNITY_IOS && !UNITY_EDITOR
-        return "file://" + Application.streamingAssetsPath + "/";
-#endif
-                return "file://" + Application.streamingAssetsPath + "/";
-            }
-        }
-
         public void Init()
         {
             m_LogEnabled = AppSettings.Instance.LogEnabled;
         }
 
-        /// <summary>
-        /// 从StreamingAssets文件夹下读取文本信息
-        /// </summary>
-        /// <param name="subPath"></param>
-        /// <returns></returns>
+#region Read File
+
+        //从StreamingAssets文件夹下读取文本信息
         public string ReadTextFromStreamingAssets(string subPath)
         {
-            using (UnityWebRequest uwb = UnityWebRequest.Get("file://" + StreamingAssetsPath + subPath))
-            {
-                uwb.SendWebRequest();
-                while (!uwb.isDone) { }
-
-#if UNITY_2020_1_OR_NEWER
-                if (uwb.result == UnityWebRequest.Result.Success)
-#else
-                if (!uwb.isHttpError && !uwb.isNetworkError)
-#endif
-                {
-                    return uwb.downloadHandler.text;
-                }
-                else if (m_LogEnabled)
-                    Debug.LogError("[FileManager] ReadTextFromStreamingAssets, error:\r\n" + uwb.error);
-            }
-            return null;
+            return ReadFile(StreamingAssetsPath + subPath);
         }
 
-        /// <summary>
-        /// 从PersistentData文件夹下读取文本信息
-        /// </summary>
-        /// <param name="subPath"></param>
-        /// <returns></returns>
+        //从PersistentData文件夹下读取文本信息
         public string ReadTextFromPersistentData(string subPath)
         {
-            using (UnityWebRequest uwb = UnityWebRequest.Get("file://" + PersistentDataPath + subPath))
+            return ReadFile(PersistentDataPath + subPath);
+        }
+
+        /// <summary>
+        /// 读取指定路径下的文本
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public string ReadFile(string path)
+        {
+            using (UnityWebRequest uwb = UnityWebRequest.Get("file://" + path))
             {
                 uwb.SendWebRequest();
                 while (!uwb.isDone) { }
@@ -119,54 +92,67 @@ namespace Company.NewApp
                     return uwb.downloadHandler.text;
                 }
                 else if (m_LogEnabled)
-                    Debug.LogError("[FileManager] ReadTextFromPersistentData, error:\r\n" + uwb.error);
+                    Debug.LogError("[FileManager] Read text error:" + uwb.error + "\r\npath:" + path);
             }
             return null;
         }
 
-        /// <summary>
-        /// 将文本保存到StreamingAssets目录下
-        /// </summary>
-        /// <param name="subDirectory">StreamingAssets下的子目录</param>
-        /// <param name="fileName">文件名</param>
-        /// <param name="text">保存内容</param>
+        #endregion Read File
+
+
+        #region Save File
+
+        //将文本保存到StreamingAssets目录下
         public void SaveTextToStreamingAssets(string subDirectory, string fileName, string text)
         {
-            string fullDirectory = StreamingAssetsPath + subDirectory;
-            if (!Directory.Exists(fullDirectory))
-            {
-                Directory.CreateDirectory(fullDirectory);
-            }
+            string directory = StreamingAssetsPath + subDirectory;
+            SaveFile(directory, fileName, text);
+        }
 
-            string fullPath = fullDirectory + fileName;
-            using (StreamWriter sw = new StreamWriter(fullPath))
-            {
-                sw.Write(text);
-                sw.Close();
-            }
+        //将文本保存到persistentdata目录下
+        public void SaveTextToPersistentData(string subDirectory, string fileName, string text)
+        {
+            string directory = PersistentDataPath + subDirectory;
+            SaveFile(directory, fileName, text);
         }
 
         /// <summary>
-        /// 将文本保存到persistentdata目录下
+        /// 保存文件
         /// </summary>
-        /// <param name="subDirectory">PersistentData下的子目录</param>
+        /// <param name="directory">不含文件名的路径</param>
         /// <param name="fileName">文件名</param>
-        /// <param name="text">保存内容</param>
-        public void SaveTextToPersistentData(string subDirectory, string fileName, string text)
+        /// <param name="text">保存文件内容</param>
+        public void SaveFile(string directory, string fileName, string text)
         {
-            string fullDirectory = PersistentDataPath + subDirectory;
-            if (!Directory.Exists(fullDirectory))
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(fullDirectory);
+                Directory.CreateDirectory(directory);
             }
 
-            string fullPath = fullDirectory + fileName;
+            string fullPath = directory + fileName;
             using (StreamWriter sw = new StreamWriter(fullPath))
             {
                 sw.Write(text);
                 sw.Close();
             }
         }
+
+        #endregion Save File
+
+
+        #region Delete File
+
+        public void DeleteFileInPersistentDataPath(string subPath)
+        {
+            DeleteFile(PersistentDataPath + subPath);
+        }
+
+        public void DeleteFile(string path)
+        {
+            File.Delete(path);
+        }
+
+        #endregion Delete File
 
         //判断Persistent路径中是否存在指定文件
         public bool PersistentPathExists(string subPath)
