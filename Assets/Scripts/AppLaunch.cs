@@ -110,9 +110,6 @@ namespace Company.NewApp
             m_InitState = InitState.Inited;
             
             MainController.Instance?.Init();
-            Debug.Log("RuntimePath:" + UnityEngine.AddressableAssets.Addressables.RuntimePath);
-            Debug.Log("buildPath:" + UnityEngine.AddressableAssets.Addressables.BuildPath);
-            Debug.Log("LibraryPath:" + UnityEngine.AddressableAssets.Addressables.LibraryPath);
             yield break;
         }
 
