@@ -26,7 +26,7 @@ namespace Company.NewApp.Models
         {
             base.Init(parameters);
 
-            CreateEntityList();
+            //CreateEntityList();
         }
 
         public void CreateEntityList()

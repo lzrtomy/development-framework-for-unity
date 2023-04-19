@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,16 +25,13 @@ namespace Company.NewApp
             }
         }
 
-        [Header("放在本地的UI预制体信息，全路径要写到文件扩展名")]
-        [SerializeField] private ViewInfo[] m_UIDataArray;
-
         //UI名称字典
         private Dictionary<ViewType, ViewInfo> m_UIDataDict = new Dictionary<ViewType, ViewInfo>();
         public Dictionary<ViewType, ViewInfo> UIDataDict { get { return m_UIDataDict; } }
 
         public void Init()
         {
-            AddUIDataToDictionary();
+            AddUIDataToDictionaryFromExcel();
         }
 
         /// <summary>
@@ -48,14 +46,27 @@ namespace Company.NewApp
             return viewInfo;
         }
 
-        private void AddUIDataToDictionary()
+        /// <summary>
+        /// 通过Excel读取UI信息并管理到字典中
+        /// </summary>
+        private void AddUIDataToDictionaryFromExcel()
         {
-            for (int index = 0; index < m_UIDataArray.Length; index++)
+            List<UI_GeneralRawEntity> rawEntityList = UI_GeneralRawEntityModel.Instance.GetList();
+            for (int i = 0; i < rawEntityList.Count; i++)
             {
-                if (!UIDataDict.ContainsKey(m_UIDataArray[index].ViewType))
+                ViewInfo viewInfo = new ViewInfo();
+                if (!Enum.TryParse<ViewType>(rawEntityList[i].ViewType, out viewInfo.ViewType))
                 {
-                    UIDataDict.Add(m_UIDataArray[index].ViewType, m_UIDataArray[index]);
+                    Debug.LogErrorFormat("[UISettings] View type -{0}- is wrong at id -{1}-", rawEntityList[i].ViewType, rawEntityList[i].Id);
                 }
+                viewInfo.FullPath = rawEntityList[i].FullPath;
+                viewInfo.IsWithPresenter = rawEntityList[i].IsWithPresenter == 1;
+                viewInfo.IsRefInManager = rawEntityList[i].IsRefInManager == 1;
+                viewInfo.Recyclable = rawEntityList[i].Recyclable == 1;
+                viewInfo.Preload = rawEntityList[i].Preload == 1;
+
+                UIDataDict.Add(viewInfo.ViewType, viewInfo);
+                Debug.Log("[UISettings] view type:" + viewInfo.ViewType);
             }
         }
     }
@@ -71,6 +82,9 @@ namespace Company.NewApp
 
         //预制体上是否带有Presenter层
         public bool IsWithPresenter = false;
+
+        //是否在UIManager中管理起来
+        public bool IsRefInManager = true;
 
         //关闭时是否回收
         public bool Recyclable = false;

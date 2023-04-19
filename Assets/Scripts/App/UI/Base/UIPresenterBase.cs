@@ -32,7 +32,7 @@ namespace Company.NewApp.Presenters
         /// <summary>
         /// 关闭UI
         /// </summary>
-        protected virtual void OnClose()
+        protected virtual void OnClose(int viewId)
         {
             //TODO 处理关闭UI的逻辑
         }

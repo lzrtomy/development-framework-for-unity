@@ -39,7 +39,7 @@ public abstract class AbstractRawEntityModel<T, P>
         }
     }
 
-    private string StreamingAssetsPath
+    private string StreamingAssetsPathUri
     {
         get
         {
@@ -49,6 +49,8 @@ public abstract class AbstractRawEntityModel<T, P>
         return Application.streamingAssetsPath + "/";  //"jar: file://" + Application.persistentDataPath + "!/assets/";
 #elif UNITY_IOS && !UNITY_EDITOR
         return "file://" + Application.streamingAssetsPath + "/";
+#elif UNITY_WEBGL
+            return Application.streamingAssetsPath + "/";
 #endif
             return "file://" + Application.streamingAssetsPath + "/";
         }
@@ -81,7 +83,7 @@ public abstract class AbstractRawEntityModel<T, P>
 
     public IEnumerator IELoadData()
     {
-        string path = StreamingAssetsPath + RAW_ENTITY_DATA_PATH + FileName;
+        string path = StreamingAssetsPathUri + RAW_ENTITY_DATA_PATH + FileName;
         byte[] bytes;
         using (UnityWebRequest uwb = UnityWebRequest.Get(path)) 
         {

@@ -52,6 +52,17 @@ namespace Company.NewApp
             }
         }
 
+        public static string ToUri(string filePath)
+        {
+#if UNITY_EDITOR
+            return "file://" + filePath;
+#elif UNITY_WEBGL
+            return filePath;
+#endif
+            return "file://" + filePath;
+        }
+
+
         public void Init()
         {
             m_LogEnabled = AppSettings.Instance.LogEnabled;
@@ -78,7 +89,7 @@ namespace Company.NewApp
         /// <returns></returns>
         public string ReadFile(string path)
         {
-            using (UnityWebRequest uwb = UnityWebRequest.Get("file://" + path))
+            using (UnityWebRequest uwb = UnityWebRequest.Get(ToUri(path)))
             {
                 uwb.SendWebRequest();
                 while (!uwb.isDone) { }

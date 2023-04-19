@@ -132,7 +132,7 @@ public class AppTools : Editor
 
         Debug.Log("============================== Result ==============================");
 
-        Debug.Log(string.Format("Total code line: {0}. Scripte file quantity: {1}", totalLine, fileName.Length));
+        Debug.Log(string.Format("Total code line: {0}. Script file quantity: {1}", totalLine, fileName.Length));
 
         Debug.Log("============================== Code Analysis Complete ==============================");
     }

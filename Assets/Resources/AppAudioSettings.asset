@@ -16,12 +16,12 @@ MonoBehaviour:
   - AudioEvent: 1
     AudioFullName: DemoBGM.wav
     VolumeScale: 1
-    IsPreload: 1
+    IsPreload: 0
   - AudioEvent: 2
     AudioFullName: DemoEff01.wav
     VolumeScale: 1
-    IsPreload: 1
+    IsPreload: 0
   - AudioEvent: 3
     AudioFullName: DemoEff02.wav
     VolumeScale: 1
-    IsPreload: 1
+    IsPreload: 0

@@ -94,6 +94,38 @@ namespace Company.NewApp
             }
         }
 
+        public void LoadAsset<T>(string key, Action<T> onComplete) where T : UnityEngine.Object
+        {
+            if (!m_AssetHandleDict.ContainsKey(key))
+            {
+                AsyncOperationHandle<UnityEngine.Object> tempHandle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
+                m_AssetHandleDict[key] = tempHandle;
+
+                tempHandle.Completed += handle=>
+                {
+                    if (handle.Result == null && m_LogEnabled)
+                    {
+                        Debug.Log("[AddressablesManager]  Cannot get asset cache with key: " + key);
+                        onComplete?.Invoke(null);
+                        return;
+                    }
+                    if (handle.Result is Texture2D)
+                    {
+
+                    }
+                    else if (handle.Result is GameObject)
+                    {
+                        RefreshMaterial(handle.Result as GameObject);
+                    }
+                    onComplete?.Invoke(handle.Result as T);
+                };
+            }
+            else
+            {
+                onComplete?.Invoke(m_AssetHandleDict[key].Result as T);
+            }
+        }
+
         /// <summary>
         /// 通过多个Key加载多个对象
         /// </summary>

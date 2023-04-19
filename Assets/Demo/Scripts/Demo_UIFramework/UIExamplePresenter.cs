@@ -16,16 +16,19 @@ namespace Company.NewApp.Presenters
 
         protected override void AddListeners()
         {
-            EventManager.Instance.AddListener(MyEventName.Demo_UI.OnCloseUIExample.ToString(), OnClose);
+            EventManager.Instance.AddListener<int>(MyEventName.UIGlobal.OnCloseViewById.ToString(), OnClose);
         }
 
         protected override void RemoveListeners()
         {
-            EventManager.Instance.RemoveListener(MyEventName.Demo_UI.OnCloseUIExample.ToString(), OnClose);
+            EventManager.Instance.RemoveListener<int>(MyEventName.UIGlobal.OnCloseViewById.ToString(), OnClose);
         }
 
-        protected override void OnClose()
+        protected override void OnClose(int viewId)
         {
+            if (m_UIExampleView.ViewId != viewId)
+                return;
+
             CloseViewPrefab(m_UIExampleView);
         }
     }

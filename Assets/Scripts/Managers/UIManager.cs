@@ -49,10 +49,10 @@ namespace Company.NewApp
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="type"></param>
-        /// <param name="viewId"></param>
+        /// <param name="viewName"></param>
         /// <param name="t"></param>
         /// <returns></returns>
-        public bool IsViewExist<T>(ViewType type, string viewId, out T t) where T : UIViewBase
+        public bool IsViewExist<T>(ViewType type, string viewName, out T t) where T : UIViewBase
         {
             t = null;
             List<UIViewBase> list = null;
@@ -61,7 +61,7 @@ namespace Company.NewApp
             {
                 for (int index = 0; index < list.Count; index++)
                 {
-                    if (list[index].ViewId == viewId)
+                    if (list[index].ViewName == viewName)
                     {
                         t = list[index] as T;
                         return true;
@@ -123,21 +123,21 @@ namespace Company.NewApp
         /// <param name="name">自定义名称</param>
         /// <param name="initParams">UI参数</param>
         /// <returns></returns>
-        public T Open<T>(ViewType type, string viewId, Transform root, params object[] initParams) where T : UIViewBase
+        public T Open<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase
         {
             T t = null;
-            if (IsViewExist(type, viewId, out t))
+            if (IsViewExist(type, viewName, out t))
             {
                 Debug.LogError(string.Format("[UIManager] Cannot open new {0}, since it has already been existed!", typeof(T).Name));
                 return t;
             }
             if (m_UISettings.UIDataDict[type].Recyclable)
             {
-                return GetViewFromPool<T>(type, viewId, root, initParams);
+                return GetViewFromPool<T>(type, viewName, root, initParams);
             }
             else
             {
-                return NewView<T>(type, viewId, root, initParams);
+                return NewView<T>(type, viewName, root, initParams);
             }
         }
 
@@ -146,34 +146,34 @@ namespace Company.NewApp
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private T NewView<T>(ViewType type, string viewId, Transform root, params object[] initParams) where T : UIViewBase
+        private T NewView<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase
         {
             GameObject go = ResourcesManager.Instance.Clone(m_UISettings.UIDataDict[type].FullPath);
-            return HandleView<T>(go, type, viewId, root, initParams);
+            return HandleView<T>(go, type, viewName, root, initParams);
         }
 
-        private T GetViewFromPool<T>(ViewType type, string viewId, Transform root, params object[] initParams) where T : UIViewBase 
+        private T GetViewFromPool<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase 
         {
             GameObject go = ObjectPool.Instance.Get(m_UISettings.UIDataDict[type].FullPath);
-            return HandleView<T>(go, type, viewId, root, initParams);
+            return HandleView<T>(go, type, viewName, root, initParams);
         }
 
-        private T HandleView<T>(GameObject viewGo, ViewType type, string viewId, Transform root, params object[] initParams) where T : UIViewBase 
+        private T HandleView<T>(GameObject viewGo, ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase 
         {
-            bool isPrefabWithPresenter = m_UISettings.UIDataDict[type].IsWithPresenter;
+            ViewInfo viewInfo = m_UISettings.UIDataDict[type];
 
             T view = viewGo.GetComponent<T>();
             if (view)
             {
-                view.SetViewId(viewId);
                 view.SetViewType(type);
+                view.SetViewName(viewName);
             }
             else
             {
                 return null;
             }
 
-            if (isPrefabWithPresenter)
+            if (viewInfo.IsWithPresenter)
             {
                 UIPresenterBase presenter = viewGo.GetComponent<UIPresenterBase>();
                 if (presenter)
@@ -190,7 +190,11 @@ namespace Company.NewApp
                 view.Init(initParams);
                 view.Open();
             }
-            AddView(type, view);
+
+            if (viewInfo.IsRefInManager)
+            {
+                AddView(type, view);
+            }
 
             //调整UI属性
             RectTransform rect = viewGo.GetComponent<RectTransform>();
@@ -249,7 +253,7 @@ namespace Company.NewApp
         /// 关闭指定ViewType下的指定UI
         /// </summary>
         /// <param name="name">自定义名称</param>
-        public void Close(ViewType type, string viewId)
+        public void Close(ViewType type, int viewId)
         {
             List<UIViewBase> tempList = null;
             m_ViewDict.TryGetValue(type, out tempList);

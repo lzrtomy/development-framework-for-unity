@@ -23,7 +23,7 @@ namespace Company.NewApp.Views
 
         public override void Close()
         {
-            EventManager.Instance.Dispatch(MyEventName.Demo_UI.OnCloseUIExample.ToString());
+            EventManager.Instance.Dispatch<int>(MyEventName.UIGlobal.OnCloseViewById.ToString(), ViewId);
         }
     }
 }

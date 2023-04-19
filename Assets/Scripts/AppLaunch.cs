@@ -45,8 +45,6 @@ namespace Company.NewApp
         private void InitAppSettings()
         {
             AppSettings.Instance.Init();
-            AppAudioSettings.Instance.Init();
-            UISettings.Instance.Init();
         }
 
         /// <summary>
@@ -67,6 +65,9 @@ namespace Company.NewApp
 
         IEnumerator IEInitApp()
         {
+            AppAudioSettings.Instance.Init();
+            UISettings.Instance.Init();
+
             #region 数据模型层初始化
 
             //示例配置表
@@ -109,7 +110,9 @@ namespace Company.NewApp
             m_InitState = InitState.Inited;
             
             MainController.Instance?.Init();
-
+            Debug.Log("RuntimePath:" + UnityEngine.AddressableAssets.Addressables.RuntimePath);
+            Debug.Log("buildPath:" + UnityEngine.AddressableAssets.Addressables.BuildPath);
+            Debug.Log("LibraryPath:" + UnityEngine.AddressableAssets.Addressables.LibraryPath);
             yield break;
         }
 

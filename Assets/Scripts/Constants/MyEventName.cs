@@ -4,9 +4,9 @@
     {
         #region Famework Demo
 
-        public enum Demo_UI 
+        public enum UIGlobal
         {
-            OnCloseUIExample
+            OnCloseViewById
         }
 
         public enum Demo_Auido

@@ -24,12 +24,17 @@ namespace Company.NewApp
         IEnumerator IELoadRawEntityData(Action nextInitSetp) 
         {
             #region 加载表格数据示例
+
             yield return StartCoroutine(Example_GeneralRawEntityModel.Instance.IELoadData());
             if(m_LogEnabled)
                 Debug.Log("[DataModelManager] Example raw entity count: " + Example_GeneralRawEntityModel.Instance.GetList().Count);
-            #endregion
-            
+            yield return StartCoroutine(UI_GeneralRawEntityModel.Instance.IELoadData());
+            if (m_LogEnabled)
+                Debug.Log("[DataModelManager] UI raw entity count: " + UI_GeneralRawEntityModel.Instance.GetList().Count);
             yield return StartCoroutine(Level_GeneralRawEntityModel.Instance.IELoadData());
+
+            #endregion
+
 
             //TODO 装载游戏数据
 

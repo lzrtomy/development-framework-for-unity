@@ -10,14 +10,16 @@ namespace Company.NewApp.Views
         protected RectTransform m_RectTrans;
 
         [ReadOnly]
+        [Header("[只读]视图名称")]
+        [SerializeField] protected string m_ViewName;
+
+        [ReadOnly]
         [Header("[只读]视图ID，用于区分UI")]
-        [SerializeField]
-        protected string m_ViewId;
+        [SerializeField] protected int m_ViewId;
 
         [ReadOnly]
         [Header("[只读]视图种类，用于确定复用的UI预制体")]
-        [SerializeField]
-        protected ViewType m_ViewType = ViewType.None;
+        [SerializeField] protected ViewType m_ViewType = ViewType.None;
 
         public GameObject GameObject 
         { 
@@ -42,7 +44,9 @@ namespace Company.NewApp.Views
             }
         }
 
-        public string ViewId { get { return m_ViewId; } }
+        public string ViewName { get { return m_ViewName; } }
+
+        public int ViewId { get { return m_ViewId; } }
 
         public ViewType ViewType { get { return m_ViewType; } }
 
@@ -50,13 +54,10 @@ namespace Company.NewApp.Views
         /// 初始化
         /// </summary>
         /// <param name="paramters"></param>
-        public virtual void Init(params object[] paramters) { }
-
-        /// <summary>
-        /// 设定视图Id
-        /// </summary>
-        /// <param name="viewId"></param>
-        public virtual void SetViewId(string viewId) { m_ViewId = viewId; }
+        public virtual void Init(params object[] paramters)
+        {
+            m_ViewId = GetInstanceID();
+        }
 
         /// <summary>
         /// 设定视图种类
@@ -65,11 +66,17 @@ namespace Company.NewApp.Views
         public virtual void SetViewType(ViewType viewType) { m_ViewType = viewType; }
 
         /// <summary>
+        /// 设定视图名称
+        /// </summary>
+        /// <param name="viewName"></param>
+        public virtual void SetViewName(string viewName) { m_ViewName = viewName; }
+
+        /// <summary>
         /// 展示
         /// </summary>
         public virtual void Open()
         {
-            GameObject?.SetActive(true);
+
         }
 
         /// <summary>
