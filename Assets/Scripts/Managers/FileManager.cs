@@ -54,6 +54,7 @@ namespace Company.NewApp
 
         public static string ToUri(string filePath)
         {
+            Debug.Log("[FileManager] ToUri filePath:" + filePath);
 #if UNITY_EDITOR
             return "file://" + filePath;
 #elif UNITY_WEBGL
@@ -70,29 +71,18 @@ namespace Company.NewApp
 
 #region Read File
 
-        //从StreamingAssets文件夹下读取文本信息
-        public string ReadTextFromStreamingAssets(string subPath)
-        {
-            return ReadFile(StreamingAssetsPath + subPath);
-        }
-
-        //从PersistentData文件夹下读取文本信息
-        public string ReadTextFromPersistentData(string subPath)
-        {
-            return ReadFile(PersistentDataPath + subPath);
-        }
-
         /// <summary>
         /// 读取指定路径下的文本
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="uri"></param>
+        /// <param name="onComplete"></param>
+        /// <param name="onFailed"></param>
         /// <returns></returns>
-        public string ReadFile(string path)
+        public IEnumerator IEReadFile(Uri uri, Action<string> onComplete, Action onFailed = null)
         {
-            using (UnityWebRequest uwb = UnityWebRequest.Get(ToUri(path)))
+            using (UnityWebRequest uwb = UnityWebRequest.Get(uri))
             {
-                uwb.SendWebRequest();
-                while (!uwb.isDone) { }
+                yield return uwb.SendWebRequest();
 
 #if UNITY_2020_1_OR_NEWER
                 if (uwb.result == UnityWebRequest.Result.Success)
@@ -100,12 +90,18 @@ namespace Company.NewApp
                 if (!uwb.isHttpError && !uwb.isNetworkError)
 #endif
                 {
-                    return uwb.downloadHandler.text;
+                    if (m_LogEnabled)
+                        Debug.Log("[FileManager] Read text:" + uwb.error + "\r\nUri:" + uri);
+                    onComplete?.Invoke(uwb.downloadHandler.text);
                 }
-                else if (m_LogEnabled)
-                    Debug.LogError("[FileManager] Read text error:" + uwb.error + "\r\npath:" + path);
+                else
+                {
+                    if (m_LogEnabled)
+                        Debug.LogError("[FileManager] Read text error:" + uwb.error + "\r\nUri:" + uri);
+                    onFailed?.Invoke();
+                }
             }
-            return null;
+            yield break;
         }
 
         #endregion Read File

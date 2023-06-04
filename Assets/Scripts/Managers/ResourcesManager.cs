@@ -13,7 +13,7 @@ namespace Company.NewApp
     {
         private AddressablesManager m_AddressablesManager;
 
-        //加载至内存中的非GameObject类型资源
+        //加载至内存中的资源
         private Dictionary<string, UnityEngine.Object> m_LoadedAssetDict = new Dictionary<string, UnityEngine.Object>();
 
         private bool m_LogEnabled = true;
@@ -49,22 +49,24 @@ namespace Company.NewApp
         /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
         /// <returns></returns>
-        public T LoadAsset<T>(string path) where T : UnityEngine.Object
+        public void LoadAsset<T>(string path, Action<T> onLoad) where T : UnityEngine.Object
         {
-            if (!m_LoadedAssetDict.ContainsKey(path))
+            if (m_LoadedAssetDict.ContainsKey(path))
             {
-                m_LoadedAssetDict[path] = GetAssetCache<T>(path);
+                onLoad?.Invoke(m_LoadedAssetDict[path] as T);
             }
-            return m_LoadedAssetDict[path] as T;
+            else
+            {
+                GetAssetCache<T>(path, 
+                    (T asset) => 
+                    {
+                        m_LoadedAssetDict[path] = asset;
+                        onLoad?.Invoke(asset);
+                    });
+            }
         }
 
-        /// <summary>
-        /// 获取Asset对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private T GetAssetCache<T>(string path) where T : UnityEngine.Object
+        private void GetAssetCache<T>(string path, Action<T> onLoad) where T : UnityEngine.Object
         {
             if (IsAssetDatabaseMode)
             {
@@ -78,14 +80,14 @@ namespace Company.NewApp
                 if (asset == null && m_LogEnabled)
                     Debug.LogError("[ResourcesManager] Cannot get asset cache at path: " + fullPath);
 
-                return asset;
-#endif
+                onLoad?.Invoke(asset);
+#else
                 Debug.LogError("[ResourcesManager] Should be used in Editor platform");
-                return null;
+#endif
             }
             else
             {
-                return m_AddressablesManager.LoadAsset<T>(AddressablesUtility.AssetPathToName(path));
+                m_AddressablesManager.LoadAsset<T>(AddressablesUtility.AssetPathToName(path), onLoad);
             }
         }
 
@@ -97,15 +99,24 @@ namespace Company.NewApp
         /// 克隆对象
         /// </summary>
         /// <param name="path">路径</param>
+        /// <param name="ponCloneath">回调</param>
         /// <param name="parent">父物体</param>
         /// <returns></returns>
-        public GameObject Clone(string path, Transform parent = null)
+        public void Clone(string path, Action<GameObject> onClone, Transform parent = null)
         {
-            if (!m_LoadedAssetDict.ContainsKey(path))
+            if (m_LoadedAssetDict.ContainsKey(path))
             {
-                m_LoadedAssetDict[path] = GetAssetCache<GameObject>(path);
+                onClone?.Invoke(Instantiate(m_LoadedAssetDict[path] as GameObject, parent));
             }
-            return Instantiate(m_LoadedAssetDict[path] as GameObject, parent);
+            else
+            {
+                GetAssetCache<GameObject>(path,
+                    (GameObject go) =>
+                    {
+                        m_LoadedAssetDict[path] = go;
+                        onClone?.Invoke(Instantiate(m_LoadedAssetDict[path] as GameObject, parent));
+                    });
+            }
         }
 
         public GameObject Clone(GameObject origin, Transform parent = null)
@@ -113,9 +124,9 @@ namespace Company.NewApp
             return Instantiate(origin, parent);
         }
 
-        #endregion
+#endregion
 
-        #region 卸载资源
+#region 卸载资源
 
         /// <summary>
         /// 根据key卸载资源
@@ -159,6 +170,6 @@ namespace Company.NewApp
             CachePool.Instance.ReleaseAll();
         }
 
-        #endregion
+#endregion
     }
 }

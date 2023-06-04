@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Company.Constants;
 using Company.Attributes;
+using System;
 
 namespace Company.NewApp
 {
@@ -88,7 +89,11 @@ namespace Company.NewApp
             {
                 if (item.Value.IsPreload && (!m_AudioClipDict.ContainsKey(item.Value.AudioFullName) || m_AudioClipDict[item.Value.AudioFullName] == null))
                 {
-                    m_AudioClipDict[item.Value.AudioFullName] = ResourcesManager.Instance.LoadAsset<AudioClip>(Defines.Path.RES_SOUNDS + item.Value.AudioFullName);
+                    ResourcesManager.Instance.LoadAsset<AudioClip>(Defines.Path.RES_SOUNDS + item.Value.AudioFullName,
+                        (AudioClip clip) => 
+                        {
+                            m_AudioClipDict[item.Value.AudioFullName] = clip;
+                        });
                 }
             }
         }
@@ -100,17 +105,23 @@ namespace Company.NewApp
         /// </summary>
         /// <param name="audioFullName">全名：*.*</param>
         /// <returns></returns>
-        private AudioClip GetAudioClip(string audioFullName)
+        private void GetAudioClip(string audioFullName, Action<AudioClip> onGet)
         {
             if (!m_AudioClipDict.ContainsKey(audioFullName) || m_AudioClipDict[audioFullName] == null)
             {
-                m_AudioClipDict[audioFullName] = ResourcesManager.Instance.LoadAsset<AudioClip>(Defines.Path.RES_SOUNDS + audioFullName);
+                ResourcesManager.Instance.LoadAsset<AudioClip>(Defines.Path.RES_SOUNDS + audioFullName,
+                    (AudioClip clip) =>
+                    {
+                        m_AudioClipDict[audioFullName] = clip;
+                        onGet?.Invoke(clip);
+                    });
+                return;
             }
             if (m_AudioClipDict.ContainsKey(audioFullName))
             {
-                return m_AudioClipDict[audioFullName];
+                onGet?.Invoke(m_AudioClipDict[audioFullName]);
+                return;
             }
-            return null;
         }
 
         /// <summary>
@@ -118,13 +129,12 @@ namespace Company.NewApp
         /// </summary>
         /// <param name="audioEvent"></param>
         /// <returns></returns>
-        private AudioClip GetAudioClip(AudioEvent audioEvent) 
+        private void GetAudioClip(AudioEvent audioEvent, Action<AudioClip> onComplete) 
         {
             if (m_AudioSettings.AudioDataDict.ContainsKey(audioEvent))
             {
-                return GetAudioClip(m_AudioSettings.AudioDataDict[audioEvent].AudioFullName);
+                GetAudioClip(m_AudioSettings.AudioDataDict[audioEvent].AudioFullName, onComplete);
             }
-            return null;
         }
 
         #endregion
@@ -138,7 +148,11 @@ namespace Company.NewApp
         {
             if (m_AudioSettings.AudioDataDict.ContainsKey(audioEvent))
             {
-                PlayBGM(GetAudioClip(audioEvent),loop, m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
+                GetAudioClip(audioEvent,
+                    (AudioClip clip) =>
+                    {
+                        PlayBGM(clip, loop, m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
+                    });
             }
         }
 
@@ -147,9 +161,14 @@ namespace Company.NewApp
         /// </summary>
         /// <param name="fullAudioName">全名：*.*</param>
         /// <param name="volumeScale">初始音量</param>
-        public void PlayBGM(string fullAudioName, bool loop, float volumeScale = 1)
+        public void PlayBGM(string fullAudioName, bool loop, float volumeScale = 1, Action onPlay = null)
         {
-            PlayBGM(GetAudioClip(fullAudioName),loop, volumeScale);
+            GetAudioClip(fullAudioName,
+                (AudioClip clip) =>
+                {
+                    PlayBGM(clip, loop, volumeScale);
+                    onPlay?.Invoke();
+                });
         }
         
         private void PlayBGM(AudioClip audioClip, bool loop, float volumeScale)
@@ -170,18 +189,21 @@ namespace Company.NewApp
         /// </summary>
         /// <param name="audioEvent"></param>
         /// <param name="canOverlay">是否可以叠加播放</param>
-        public void PlayEffect(AudioEvent audioEvent, bool canOverplay)
+        public void PlayEffect(AudioEvent audioEvent, bool canOverplay, Action onPlay = null)
         {
             if (m_AudioSettings.AudioDataDict.ContainsKey(audioEvent))
             {
-                if (canOverplay)
-                {
-                    PlayEffectOverlay(GetAudioClip(audioEvent), m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
-                }
-                else
-                {
-                    PlayEffectNotOverlay(GetAudioClip(audioEvent), m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
-                }
+                GetAudioClip(audioEvent,
+                    (AudioClip clip) =>
+                    {
+                        if (canOverplay)
+                            PlayEffectOverlay(clip, m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
+                        else
+                            PlayEffectNotOverlay(clip, m_AudioSettings.AudioDataDict[audioEvent].VolumeScale);
+
+                        onPlay?.Invoke();
+                    });
+
             }
         }
 
@@ -191,19 +213,22 @@ namespace Company.NewApp
         /// <param name="fullAudioName">全名：*.*</param>
         /// <param name="volumeScale">初始音量</param>
         /// <param name="canOverlay">是否可以叠加播放</param>
-        public void PlayEffect(string fullAudioName, bool canOverplay, float volumeScale = 1)
+        public void PlayEffect(string fullAudioName, bool canOverplay, float volumeScale = 1, Action onPlay = null)
         {
-            if (canOverplay)
-            {
-                PlayEffectOverlay(GetAudioClip(fullAudioName), volumeScale);
-            }
-            else
-            {
-                PlayEffectNotOverlay(GetAudioClip(fullAudioName), volumeScale);
-            }
+            GetAudioClip(fullAudioName,
+                (AudioClip clip) => 
+                {
+                    if (canOverplay)
+                        PlayEffectOverlay(clip, volumeScale);
+                    else
+                        PlayEffectNotOverlay(clip, volumeScale);
+
+                    onPlay?.Invoke();
+                });
+            
         }
 
-        private void PlayEffectOverlay(AudioClip audioClip, float volumeScale) 
+        private void PlayEffectOverlay(AudioClip audioClip, float volumeScale)
         {
             if (audioClip)
             {

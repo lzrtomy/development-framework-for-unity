@@ -1,5 +1,6 @@
 ﻿
 using Company.Constants;
+using Company.Tools;
 using UnityEngine;
 
 namespace Company.NewApp
@@ -9,8 +10,6 @@ namespace Company.NewApp
         private void Start()
         {
             Init();
-
-            HotkeyManager.Instance.AddListener<int>(HotkeyEventName.Demo_Hotkey.OnDemoEvent5.ToString(), OnHotKeyEvent);
         }
 
         /// <summary>
@@ -19,16 +18,13 @@ namespace Company.NewApp
         public void Init()
         {
             Debug.Log("[AppCoreBusiness] GameStart");
-        }
 
-        private void OnHotKeyEvent(int num)
-        {
-            Debug.Log("num:" + num);
-        }
-
-        private void OnDestroy()
-        {
-            HotkeyManager.Instance.RemoveListener<int>(HotkeyEventName.Demo_Hotkey.OnDemoEvent5.ToString(), OnHotKeyEvent);
+            AddressablesManager.Instance.LoadAsset(AddressablesUtility.AssetPathToName("Prefabs/Sphere.prefab"), (GameObject result) => 
+            {
+                GameObject go = ResourcesManager.Instance.Clone(result);
+                go.transform.position = Vector3.zero;
+                Debug.Log("加载球成功");
+            });
         }
 
     }

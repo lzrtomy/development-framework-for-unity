@@ -2,12 +2,10 @@ using System.Collections;
 using UnityEngine;
 using Company.NewApp;
 using Company.NewApp.Views;
+using Company.NewApp.Presenters;
 
 public class MainController : SimpleUnitySingleton<MainController>
 {
-    [Header("»­²¼")]
-    [SerializeField] RectTransform m_CanvasRect;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -30,7 +28,7 @@ public class MainController : SimpleUnitySingleton<MainController>
 
         yield return new WaitForSeconds(0.1f);
 
-        UISelectLevelView view = UIManager.Instance.Open<UISelectLevelView>(ViewType.UISelectLevel, typeof(UISelectLevelView).Name, m_CanvasRect);
+        UIManager.Instance.Open<UISelectLevelView>(ViewType.UISelectLevel);
 
         yield break;
     }

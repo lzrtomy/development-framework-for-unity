@@ -12,7 +12,7 @@ namespace Company.NewApp
     public class UIManager : UnitySingleton<UIManager>
     {
         //每个场景下的Canvas
-        private Transform m_RootTrans;
+        private RectTransform m_CanvasRect;
 
         private Dictionary<ViewType, List<UIViewBase>> m_ViewDict;
 
@@ -23,15 +23,15 @@ namespace Company.NewApp
 
         private bool m_LogEnabled;
 
-        private Transform RootTrans 
+        private RectTransform CanvasRect
         {
             get 
             {
-                if (!m_RootTrans) 
+                if (!m_CanvasRect) 
                 {
-                    m_RootTrans = GameObject.Find("Canvas").transform;
+                    m_CanvasRect = GameObject.Find("Canvas").GetComponent<RectTransform>();
                 }
-                return m_RootTrans;
+                return m_CanvasRect;
             }
         }
 
@@ -42,6 +42,18 @@ namespace Company.NewApp
 
             m_ViewDict = new Dictionary<ViewType, List<UIViewBase>>();
             InitLinkFunctionsDict();
+        }
+
+        /// <summary>
+        /// 判断是否已经创建了指定的UI
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public bool IsViewExist<T>(ViewType type, out T t) where T : UIViewBase
+        {
+            return IsViewExist<T>(type, type.ToString(), out t);
         }
 
         /// <summary>
@@ -115,29 +127,57 @@ namespace Company.NewApp
 
         #region 加载并展示UI
 
+        public void Open<T>(ViewType type, Action<T> onOpen, params object[] initParams) where T : UIViewBase
+        {
+            Open<T>(type, type.ToString(), CanvasRect, onOpen, initParams);
+        }
+
+        public void Open<T>(ViewType type, params object[] initParams) where T : UIViewBase
+        {
+            Open<T>(type, type.ToString(), CanvasRect, null, initParams);
+        }
+
+        public void Open<T>(ViewType type, RectTransform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
+        {
+            Open<T>(type, type.ToString(), parent, onOpen, initParams);
+        }
+
+        public void Open<T>(ViewType type, RectTransform parent, params object[] initParams) where T : UIViewBase
+        {
+            Open<T>(type, type.ToString(), parent, null, initParams);
+        }
+
+        public void Open<T>(ViewType type, string viewName, Transform parent, params object[] initParams) where T : UIViewBase
+        {
+            Open<T>(type, viewName, parent, null, initParams);
+        }
+
         /// <summary>
         /// 加载并展示UI
         /// </summary>
-        /// <typeparam name="T">UI类型</typeparam>
-        /// <param name="root">父节点</param>
-        /// <param name="name">自定义名称</param>
-        /// <param name="initParams">UI参数</param>
-        /// <returns></returns>
-        public T Open<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase
+        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
+        /// <param name="viewName"></param>
+        /// <param name="parent"></param>
+        /// <param name="onOpen"></param>
+        /// <param name="initParams"></param>
+        public void Open<T>(ViewType type, string viewName, Transform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
             T t = null;
             if (IsViewExist(type, viewName, out t))
             {
                 Debug.LogError(string.Format("[UIManager] Cannot open new {0}, since it has already been existed!", typeof(T).Name));
-                return t;
+                onOpen?.Invoke(t);
+                return;
             }
+
             if (m_UISettings.UIDataDict[type].Recyclable)
             {
-                return GetViewFromPool<T>(type, viewName, root, initParams);
+                GetViewFromPool<T>(type, viewName, parent, onOpen, initParams);
             }
             else
             {
-                return NewView<T>(type, viewName, root, initParams);
+                NewView<T>(type, viewName, parent, onOpen, initParams);
             }
         }
 
@@ -146,19 +186,28 @@ namespace Company.NewApp
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private T NewView<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase
+        private void NewView<T>(ViewType type, string viewName, Transform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
-            GameObject go = ResourcesManager.Instance.Clone(m_UISettings.UIDataDict[type].FullPath);
-            return HandleView<T>(go, type, viewName, root, initParams);
+            ResourcesManager.Instance.Clone(m_UISettings.UIDataDict[type].FullPath, 
+                (GameObject go) =>
+                {
+                    HandleView<T>(go, type, viewName, parent, onOpen, initParams);
+                });
         }
 
-        private T GetViewFromPool<T>(ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase 
+        private void GetViewFromPool<T>(ViewType type, string viewName, Transform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
-            GameObject go = ObjectPool.Instance.Get(m_UISettings.UIDataDict[type].FullPath);
-            return HandleView<T>(go, type, viewName, root, initParams);
+            ObjectPool pool = ObjectPool.Instance;
+            string path = m_UISettings.UIDataDict[type].FullPath;
+            pool.Preload(path, 
+                () =>
+                {
+                    GameObject go = ObjectPool.Instance.Get(path);
+                    HandleView<T>(go, type, viewName, parent, onOpen, initParams);
+                });
         }
 
-        private T HandleView<T>(GameObject viewGo, ViewType type, string viewName, Transform root, params object[] initParams) where T : UIViewBase 
+        private void HandleView<T>(GameObject viewGo, ViewType type, string viewName, Transform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase 
         {
             ViewInfo viewInfo = m_UISettings.UIDataDict[type];
 
@@ -170,7 +219,8 @@ namespace Company.NewApp
             }
             else
             {
-                return null;
+                onOpen?.Invoke(null);
+                return;
             }
 
             if (viewInfo.IsWithPresenter)
@@ -198,11 +248,11 @@ namespace Company.NewApp
 
             //调整UI属性
             RectTransform rect = viewGo.GetComponent<RectTransform>();
-            rect.SetParent(root);
+            rect.SetParent(parent);
             rect.SetAsLastSibling();
             AdjustRectTransform(rect);
 
-            return view;
+            onOpen?.Invoke(view);
         }
 
         /// <summary>
@@ -214,8 +264,13 @@ namespace Company.NewApp
             rect.localEulerAngles = Vector3.zero;
             rect.localPosition = Vector3.zero;
             rect.localScale = Vector3.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+
+            //四边锚定的适配方式
+            if (rect.anchorMin == Vector2.zero && rect.anchorMax == Vector2.one)
+            {
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
         }
 
         #endregion

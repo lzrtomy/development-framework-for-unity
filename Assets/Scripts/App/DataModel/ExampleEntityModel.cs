@@ -46,7 +46,7 @@ namespace Company.NewApp.Models
             }
             if (AppSettings.Instance.LogEnabled)
             {
-                Debug.Log("[ExampleModel] level count:" + ExampleEntityDict.Count);
+                Debug.Log("[ExampleModel] example count:" + ExampleEntityDict.Count);
             }
         }
     }

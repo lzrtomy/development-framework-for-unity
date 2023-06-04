@@ -23,9 +23,13 @@ namespace Company.DevFramework.Demo
 
         private void ShowView()
         {
-            if (!UIManager.Instance.IsViewExist(ViewType.Example, "UIExample", out m_UIExampleView))
+            if (!UIManager.Instance.IsViewExist(ViewType.Example, out m_UIExampleView))
             {
-                m_UIExampleView = UIManager.Instance.Open<UIExampleView>(ViewType.Example, "UIExample", m_CanvasRect);
+                UIManager.Instance.Open(ViewType.Example,
+                    (UIExampleView view)=> 
+                    {
+                        m_UIExampleView = view;
+                    });
             }
         }
     }

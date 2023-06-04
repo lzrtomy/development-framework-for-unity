@@ -26,12 +26,13 @@ namespace Company.NewApp.Models
         {
             base.Init(parameters);
 
-            //CreateEntityList();
+            Uri uri = new Uri(PathUtil.Combine(FileManager.StreamingAssetsPath, Defines.Path.CSV_HOTKEY));
+
+            StartReadFile(uri, CreateEntityList);
         }
 
-        public void CreateEntityList()
+        public void CreateEntityList(string csv)
         {
-            string csv = FileManager.Instance.ReadTextFromStreamingAssets(Defines.Path.CSV_HOTKEY);
             MyJson.JObject csvHotkey = CSV.LoadCSV("Hotkey", csv).AsDict();
 
             MyJson.JObject tempDict = null;

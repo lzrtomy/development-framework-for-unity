@@ -71,16 +71,18 @@ namespace Company.NewApp
             #region 数据模型层初始化
 
             //示例配置表
+            DataModelBase dataModel = null;
             DataModelManager.Instance.AddDataModel<ExampleEntityModel>();
-            DataModelManager.Instance.AddDataModel<HotkeyEntityModel>();
+            dataModel = DataModelManager.Instance.AddDataModel<HotkeyEntityModel>();
+            yield return dataModel.InitState == InitState.Inited;
             DataModelManager.Instance.AddDataModel<LevelEntityModel>();
-
+            
             #endregion
 
             yield return null;
 
             #region 框架初始化
-
+            
             m_AppManagersNode.AddComponent<UpdateManager>();
             m_AppManagersNode.AddComponent<EventManager>().Init();
             m_AppManagersNode.AddComponent<HotkeyManager>().Init();
@@ -91,12 +93,12 @@ namespace Company.NewApp
             m_AppManagersNode.AddComponent<HttpRequestManager>().Init();
             m_AppManagersNode.AddComponent<WebSocketRequestManager>().Init();
             m_AppManagersNode.AddComponent<AppManager>().Init();
-
+            
             m_AudioManagerNode.AddComponent<AudioManager>().Init();
 
             m_PoolsGo.AddComponent<ObjectPool>().Init();
             m_PoolsGo.AddComponent<CachePool>().Init();
-
+            
             #endregion
 
             yield return null;
@@ -104,7 +106,7 @@ namespace Company.NewApp
             #region 检查资源更新
 
             #endregion
-
+            
             yield return null;
             
             m_InitState = InitState.Inited;

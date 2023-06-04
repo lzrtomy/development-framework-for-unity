@@ -18,14 +18,34 @@ namespace Company.NewApp
         }
 
         /// <summary>
-        /// 资源手动预加载
+        /// 是否已经预加载
         /// </summary>
         /// <param name="path"></param>
-        public void PreLoadToMemory(string path)
+        /// <returns></returns>
+        public bool IsPreload(string path)
         {
-            if (!m_GoMemoryDict.ContainsKey(path))
+            return m_GoMemoryDict.ContainsKey(path);
+        }
+
+        /// <summary>
+        /// 资源手动预加载至内存
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="onLoad">加载资源至内存后的回调</param>
+        public void Preload(string path, Action onLoad = null)
+        {
+            if (m_GoMemoryDict.ContainsKey(path))
             {
-                m_GoMemoryDict[path] = ResourcesManager.Instance.LoadAsset<GameObject>(path);
+                onLoad?.Invoke();
+            }
+            else
+            {
+                ResourcesManager.Instance.LoadAsset(path,
+                    (GameObject go) =>
+                    {
+                        m_GoMemoryDict[path] = go;
+                        onLoad?.Invoke();
+                    });
             }
         }
 
@@ -64,7 +84,7 @@ namespace Company.NewApp
         {
             if (!m_GoMemoryDict.ContainsKey(key))
             {
-                m_GoMemoryDict[key] = ResourcesManager.Instance.LoadAsset<GameObject>(key);
+                Debug.LogErrorFormat("[ObjectPool] Cannot Instaniate new GameObject with key -{0}-. Must be preload to memory at First!", key);
             }
             GameObject go = GameObject.Instantiate(m_GoMemoryDict[key]);
             return go;

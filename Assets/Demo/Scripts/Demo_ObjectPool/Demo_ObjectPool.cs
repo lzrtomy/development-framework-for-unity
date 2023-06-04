@@ -7,9 +7,11 @@ namespace Company.DevFramework.Demo
 {
     public class Demo_ObjectPool : MonoBehaviour
     {
+        string m_Key = "Prefabs/Sphere.prefab"; 
+
         public void Start()
         {
-            StartCoroutine(IETestObjectPool());
+            ObjectPool.Instance.Preload(m_Key, () => StartCoroutine(IETestObjectPool()));
         }
 
         IEnumerator IETestObjectPool()
@@ -17,10 +19,9 @@ namespace Company.DevFramework.Demo
             yield return new WaitForSeconds(1);
 
             List<GameObject> list = new List<GameObject>(); ;
-            string key = "Prefabs/Sphere.prefab";
             for (int index = 0; index < 20; index++)
             {
-                list.Add(ObjectPool.Instance.Get(key));
+                list.Add(ObjectPool.Instance.Get(m_Key));
                 list[index].transform.position += UnityEngine.Random.insideUnitSphere * 3;
                 yield return new WaitForSeconds(0.2f);
             }
@@ -34,7 +35,7 @@ namespace Company.DevFramework.Demo
                     {
                         GameObject hideGo = list[list.Count - 1];
                         list.Remove(hideGo);
-                        ObjectPool.Instance.Return(key, hideGo);
+                        ObjectPool.Instance.Return(m_Key, hideGo);
                     }
                     yield return new WaitForSeconds(0.5f);
                 }
@@ -44,7 +45,7 @@ namespace Company.DevFramework.Demo
                 int show = UnityEngine.Random.Range(1, 6);
                 for (int indexShow = 0; indexShow < show; indexShow++)
                 {
-                    list.Add(ObjectPool.Instance.Get(key));
+                    list.Add(ObjectPool.Instance.Get(m_Key));
                     list[index].transform.position += UnityEngine.Random.insideUnitSphere * 5;
                     yield return new WaitForSeconds(0.5f);
                 }
@@ -54,7 +55,7 @@ namespace Company.DevFramework.Demo
 
             for (int index = 0; index < list.Count; index++)
             {
-                ObjectPool.Instance.Return(key, list[index]);
+                ObjectPool.Instance.Return(m_Key, list[index]);
                 yield return new WaitForSeconds(0.2f);
             }
             list.Clear();

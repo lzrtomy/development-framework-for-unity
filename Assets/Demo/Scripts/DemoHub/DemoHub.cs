@@ -23,6 +23,7 @@ namespace Company.DevFramework
 
         private void Start()
         {
+            Debug.Log("[DemoHub] Init");
             m_BtnDemoHotkey.onClick.AddListener(OnShowDemoHotkey);
             m_BtnDemoObjectPool.onClick.AddListener(OnShowDemoObjectPool);
             m_BtnDemoUIFramework.onClick.AddListener(OnShowDemoUIFramework);

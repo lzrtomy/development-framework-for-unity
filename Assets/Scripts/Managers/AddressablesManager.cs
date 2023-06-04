@@ -78,10 +78,6 @@ namespace Company.NewApp
 
                 if (asset == null && m_LogEnabled)
                     Debug.Log("[AddressablesManager]  Cannot get asset cache with key: " + key);
-                if (asset is Texture2D) 
-                {
-                
-                }
                 if (asset is GameObject) 
                 {
                     RefreshMaterial(asset as GameObject);
@@ -94,9 +90,13 @@ namespace Company.NewApp
             }
         }
 
-        public void LoadAsset<T>(string key, Action<T> onComplete) where T : UnityEngine.Object
+        public void LoadAsset<T>(string key, Action<T> onLoad) where T : UnityEngine.Object
         {
-            if (!m_AssetHandleDict.ContainsKey(key))
+            if (m_AssetHandleDict.ContainsKey(key))
+            {
+                onLoad?.Invoke(m_AssetHandleDict[key].Result as T);
+            }
+            else 
             {
                 AsyncOperationHandle<UnityEngine.Object> tempHandle = Addressables.LoadAssetAsync<UnityEngine.Object>(key);
                 m_AssetHandleDict[key] = tempHandle;
@@ -106,23 +106,15 @@ namespace Company.NewApp
                     if (handle.Result == null && m_LogEnabled)
                     {
                         Debug.Log("[AddressablesManager]  Cannot get asset cache with key: " + key);
-                        onComplete?.Invoke(null);
+                        onLoad?.Invoke(null);
                         return;
-                    }
-                    if (handle.Result is Texture2D)
-                    {
-
                     }
                     else if (handle.Result is GameObject)
                     {
                         RefreshMaterial(handle.Result as GameObject);
                     }
-                    onComplete?.Invoke(handle.Result as T);
+                    onLoad?.Invoke(handle.Result as T);
                 };
-            }
-            else
-            {
-                onComplete?.Invoke(m_AssetHandleDict[key].Result as T);
             }
         }
 
