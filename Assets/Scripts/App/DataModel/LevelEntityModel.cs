@@ -14,6 +14,8 @@ namespace Company.NewApp.Models
         public override void Init(params object[] parameters)
         {
             CreateLevelEntityList();
+
+            m_InitState = InitState.Inited;
         }
 
         /// <summary>

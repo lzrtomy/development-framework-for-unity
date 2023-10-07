@@ -227,8 +227,8 @@ namespace Company.NewApp
                 }
             }
 
-            m_AssetHandleDict = new Dictionary<string, AsyncOperationHandle<UnityEngine.Object>>();
-            m_AssetListHandleDict = new Dictionary<string, AsyncOperationHandle<IList<UnityEngine.Object>>>();
+            m_AssetHandleDict.Clear();
+            m_AssetListHandleDict.Clear();
 
             if (m_LogEnabled)
                 Debug.Log("[AddressablesManager] release all Asset");

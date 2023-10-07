@@ -14,6 +14,9 @@ namespace Company.NewApp
 
         private bool m_LogEnabled = true;
 
+        public Dictionary<string, DataModelBase> DataModelDict { get { return m_DataModelDict; } }
+        public Dictionary<string, AbstractPersistentData> PersistentDataDict { get { return m_PersistentDataDict; } }
+
         public void Init(Action nextInitStep)
         {
             m_LogEnabled = AppSettings.Instance.LogEnabled;

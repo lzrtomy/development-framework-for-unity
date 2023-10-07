@@ -26,7 +26,7 @@ namespace Company.DevFramework.Demo
             if (!UIManager.Instance.IsViewExist(ViewType.Example, out m_UIExampleView))
             {
                 UIManager.Instance.Open(ViewType.Example,
-                    (UIExampleView view)=> 
+                    (UIExampleView view) =>
                     {
                         m_UIExampleView = view;
                     });

@@ -18,6 +18,10 @@ namespace Company.Tools
         private List<TimerTask> m_CacheAddList = new List<TimerTask>();
         private int TaskID = 0;
         private bool m_IsPause = false;
+
+        
+        private TimerTask m_TempTimerTask = null;
+
         public void Update()
         {
             if (m_IsPause)
@@ -32,22 +36,24 @@ namespace Company.Tools
             for (int index = 0; index < m_TimerTasks.Count; index++)
             {
                 var timerTask = m_TimerTasks.ElementAt(index);
-                if (timerTask.Value.IsCanRemove)
+                m_TempTimerTask = timerTask.Value;
+
+                if (m_TempTimerTask.IsCanRemove)
                 {
                     continue;
                 }
-                if (timerTask.Value.CurTime < timerTask.Value.Duration + timerTask.Value.DelayTime)
+                if (m_TempTimerTask.CurTime < m_TempTimerTask.Duration + m_TempTimerTask.DelayTime)
                 {
-                    timerTask.Value.CurTime += Time.deltaTime;
+                    m_TempTimerTask.CurTime += m_TempTimerTask.IgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime;
                 }
                 else
                 {
-                    timerTask.Value.Complete?.Invoke(timerTask.Value.Paramt);
-                    timerTask.Value.CurTime = 0;
-                    timerTask.Value.DelayTime = 0;
-                    timerTask.Value.Repeat--;
+                    m_TempTimerTask.Complete?.Invoke(m_TempTimerTask.Paramt);
+                    m_TempTimerTask.CurTime = 0;
+                    m_TempTimerTask.DelayTime = 0;
+                    m_TempTimerTask.Repeat = m_TempTimerTask.Repeat < 0 ? -1 : (m_TempTimerTask.Repeat - 1);
 
-                    if (timerTask.Value.Repeat == 0)
+                    if (m_TempTimerTask.Repeat == 0)
                     {
                         m_TimerTasks.Remove(timerTask.Key);
                         //移除会改变执行任务字典，确保执行全部任务
@@ -71,9 +77,9 @@ namespace Company.Tools
         /// <param name="complete">回调</param>
         /// <param name="delay">延时间隔</param>
         /// <returns></returns>
-        public int TimingOnce(Action<object> complete, float delay)
+        public int TimingOnce(Action<object> complete, float delay, bool ignoreTimeScale = false)
         {
-            return Timing(complete, 1, delay);
+            return Timing(complete, 1, delay, 0, ignoreTimeScale);
         }
         /// <summary>
         /// 单次定时器(有参)
@@ -82,9 +88,9 @@ namespace Company.Tools
         /// <param name="paramt">参数</param>
         /// <param name="delay">延时间隔</param>
         /// <returns></returns>
-        public int TimingOnce(Action<object> complete, object paramt, float delay)
+        public int TimingOnce(Action<object> complete, object paramt, float delay, bool ignoreTimeScale = false)
         {
-            return Timing(complete, paramt, 1, delay);
+            return Timing(complete, paramt, 1, delay, 0, ignoreTimeScale);
         }
         /// <summary>
         /// 重复定时器(无参)
@@ -94,9 +100,9 @@ namespace Company.Tools
         /// <param name="duration">时间间隔</param>
         /// <param name="delay">延时</param>
         /// <returns></returns>
-        public int Timing(Action<object> complete, int repeat, float delay, float duration = 0)
+        public int Timing(Action<object> complete, int repeat, float delay, float duration = 0, bool ignoreTimeScale = false)
         {
-            return Timing(complete, null, repeat, delay, duration);
+            return Timing(complete, null, repeat, delay, duration, ignoreTimeScale);
         }
         /// <summary>
         /// 重复定时器(有参)
@@ -107,13 +113,14 @@ namespace Company.Tools
         /// <param name="duration">计时间隔</param>
         /// <param name="delay">开始延时间隔</param>
         /// <returns></returns>
-        public int Timing(Action<object> complete, object paramt, int repeat, float delay, float duration = 0)
+        public int Timing(Action<object> complete, object paramt, int repeat, float delay, float duration = 0, bool ignoreTimeScale = false)
         {
             TaskID++;
             TimerTask timerTask = new TimerTask();
             timerTask.Complete = complete;
             timerTask.Paramt = paramt;
             timerTask.Repeat = repeat;
+            timerTask.IgnoreTimeScale = ignoreTimeScale;
             timerTask.Duration = duration;
             timerTask.DelayTime = delay;
             timerTask.CurTime = duration;
@@ -153,6 +160,7 @@ namespace Company.Tools
         public int ID;
         public Action<object> Complete;
         public object Paramt;
+        public bool IgnoreTimeScale;
         public float Duration;
         public float DelayTime;
         public float CurTime;

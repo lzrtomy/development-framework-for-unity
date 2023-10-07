@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Company.NewApp.Entities;
+using System;
 
 namespace Company.NewApp.Models
 {
@@ -15,6 +16,8 @@ namespace Company.NewApp.Models
             base.Init(parameters);
             m_ExampleEntityDict = new Dictionary<int, ExampleEntity>();
             CreateExampleEntityLib();
+
+            m_InitState = InitState.Inited;
         }
 
         /// <summary>

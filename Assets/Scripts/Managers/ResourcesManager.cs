@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Company.Tools;
+using System.Collections;
 
 namespace Company.NewApp
 {
@@ -51,20 +52,99 @@ namespace Company.NewApp
         /// <returns></returns>
         public void LoadAsset<T>(string path, Action<T> onLoad) where T : UnityEngine.Object
         {
-            if (m_LoadedAssetDict.ContainsKey(path))
+            UnityEngine.Object asset = null;
+            if (m_LoadedAssetDict.TryGetValue(path, out asset))
             {
-                onLoad?.Invoke(m_LoadedAssetDict[path] as T);
+                onLoad?.Invoke(asset as T);
             }
             else
             {
                 GetAssetCache<T>(path, 
-                    (T asset) => 
+                    (T t) => 
                     {
-                        m_LoadedAssetDict[path] = asset;
-                        onLoad?.Invoke(asset);
+                        m_LoadedAssetDict[path] = t;
+                        onLoad?.Invoke(t);
                     });
             }
         }
+
+        public void LoadAsset<T>(string path) where T : UnityEngine.Object
+        {
+            LoadAsset<T>(path, null);
+        }
+
+        
+        /// <summary>
+        /// 检查预加载资源
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="onLoad"></param>
+        public void CheckPreloadPrefab(string path, Action onLoad = null)
+        {
+            UnityEngine.Object prefab = null;
+            if (m_LoadedAssetDict.TryGetValue(path, out prefab))
+            {
+                onLoad?.Invoke();
+            }
+            else
+            {
+                GetAssetCache<GameObject>(path,
+                    (GameObject go) =>
+                    {
+                        m_LoadedAssetDict[path] = go;
+                        onLoad?.Invoke();
+                    });
+            }
+        }
+
+        /// <summary>
+        /// 批量检查预加载资源，前一项检查开始后就会继续开始检查下一项
+        /// </summary>
+        /// <param name="pathList"></param>
+        /// <param name="onLoad"></param>
+        public void CheckPreloadPrefabs(List<string> pathList, Action onLoad = null)
+        {
+            int count = 0;
+            for (int i = 0; i < pathList.Count; i++)
+            {
+                CheckPreloadPrefab(pathList[i],
+                    () => 
+                    {
+                        count++;
+                        if (count >= pathList.Count)
+                        {
+                            onLoad?.Invoke();
+                        }
+                    });
+            }
+        }
+
+        /// <summary>
+        /// 批量检查预加载资源，前一项预加载结束之后才会开始检查下一项
+        /// </summary>
+        /// <param name="pathList"></param>
+        /// <param name="onLoad"></param>
+        public void CheckPreloadPrefabsInSeq(List<string> pathList, Action onLoad = null)
+        {
+            StartCoroutine(IECheckPreloadPrefabsInSeq(pathList, onLoad));
+        }
+
+        private IEnumerator IECheckPreloadPrefabsInSeq(List<string> pathList, Action onLoad = null)
+        {
+            bool isPreload = false;
+            WaitUntil waitLoad = new WaitUntil(() => isPreload);
+
+            for (int i = 0; i < pathList.Count; i++)
+            {
+                isPreload = false;
+                CheckPreloadPrefab(pathList[i], () => isPreload = true);
+                yield return waitLoad;
+            }
+
+            onLoad?.Invoke();
+        }
+
+
 
         private void GetAssetCache<T>(string path, Action<T> onLoad) where T : UnityEngine.Object
         {
@@ -170,6 +250,11 @@ namespace Company.NewApp
             CachePool.Instance.ReleaseAll();
         }
 
-#endregion
+        #endregion
+
+        private void OnDestroy()
+        {
+            StopAllCoroutines();
+        }
     }
 }

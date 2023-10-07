@@ -1,10 +1,8 @@
 ﻿using Company.NewApp.Views;
 using Company.NewApp.Presenters;
-using Company.Constants;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Company.NewApp.Models;
 using Company.Tools;
 
 namespace Company.NewApp
@@ -127,29 +125,35 @@ namespace Company.NewApp
 
         #region 加载并展示UI
 
+        public void CheckPreloadUIAsset(ViewType type, Action onLoad = null)
+        {
+            ResourcesManager.Instance.CheckPreloadPrefab(m_UISettings.UIDataDict[type].FullPath, onLoad);
+        }
+
+        public void CheckPreloadUIAssets(List<ViewType> typeList, Action onLoad = null)
+        {
+            List<string> pathList = new List<string>();
+            for (int i = 0; i < typeList.Count; i++)
+            {
+                pathList.Add(m_UISettings.UIDataDict[typeList[i]].FullPath);
+            }
+            ResourcesManager.Instance.CheckPreloadPrefabsInSeq(pathList, onLoad);
+        }
+
+
         public void Open<T>(ViewType type, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
             Open<T>(type, type.ToString(), CanvasRect, onOpen, initParams);
         }
 
-        public void Open<T>(ViewType type, params object[] initParams) where T : UIViewBase
+        public void Open<T>(ViewType type, string viewName, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
-            Open<T>(type, type.ToString(), CanvasRect, null, initParams);
+            Open<T>(type, viewName, CanvasRect, onOpen, initParams);
         }
 
-        public void Open<T>(ViewType type, RectTransform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
+        public void Open<T>(ViewType type, Transform parent, Action<T> onOpen, params object[] initParams) where T : UIViewBase
         {
             Open<T>(type, type.ToString(), parent, onOpen, initParams);
-        }
-
-        public void Open<T>(ViewType type, RectTransform parent, params object[] initParams) where T : UIViewBase
-        {
-            Open<T>(type, type.ToString(), parent, null, initParams);
-        }
-
-        public void Open<T>(ViewType type, string viewName, Transform parent, params object[] initParams) where T : UIViewBase
-        {
-            Open<T>(type, viewName, parent, null, initParams);
         }
 
         /// <summary>

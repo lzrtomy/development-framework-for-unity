@@ -19,12 +19,15 @@ namespace Company.DevFramework.Demo
             yield return new WaitForSeconds(1);
 
             List<GameObject> list = new List<GameObject>(); ;
-            for (int index = 0; index < 20; index++)
+            for (int index = 0; index < 2000; index++)
             {
                 list.Add(ObjectPool.Instance.Get(m_Key));
                 list[index].transform.position += UnityEngine.Random.insideUnitSphere * 3;
-                yield return new WaitForSeconds(0.2f);
+                yield return null;
+                //yield return new WaitForSeconds(0.2f);
             }
+
+            yield break;
 
             for (int index = 0; index < 3; index++)
             {

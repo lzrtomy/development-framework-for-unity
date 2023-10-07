@@ -52,24 +52,13 @@ namespace Company.NewApp
             }
         }
 
-        public static string ToUri(string filePath)
-        {
-            Debug.Log("[FileManager] ToUri filePath:" + filePath);
-#if UNITY_EDITOR
-            return "file://" + filePath;
-#elif UNITY_WEBGL
-            return filePath;
-#endif
-            return "file://" + filePath;
-        }
-
 
         public void Init()
         {
             m_LogEnabled = AppSettings.Instance.LogEnabled;
         }
 
-#region Read File
+        #region Read File
 
         /// <summary>
         /// 读取指定路径下的文本

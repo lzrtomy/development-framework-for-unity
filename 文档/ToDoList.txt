@@ -1,0 +1,3 @@
+（1）HttpRequestBase打印日志中的标签使用派生类的类名
+（2）TimerTool增加IgnoreTimeScale属性，遍历任务时缓存Task
+（3）TimerTool repeat 改为 re < 0 ? re : re -1

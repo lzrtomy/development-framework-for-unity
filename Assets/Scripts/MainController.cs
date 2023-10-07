@@ -28,7 +28,7 @@ public class MainController : SimpleUnitySingleton<MainController>
 
         yield return new WaitForSeconds(0.1f);
 
-        UIManager.Instance.Open<UISelectLevelView>(ViewType.UISelectLevel);
+        UIManager.Instance.Open<UISelectLevelView>(ViewType.UISelectLevel, null);
 
         yield break;
     }

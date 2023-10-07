@@ -3,6 +3,8 @@ using Company.NewApp.Models;
 using Company.HttpWebRequest;
 using Company.WebSocketRequest;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Company.NewApp
 {
@@ -71,12 +73,14 @@ namespace Company.NewApp
             #region 数据模型层初始化
 
             //示例配置表
-            DataModelBase dataModel = null;
             DataModelManager.Instance.AddDataModel<ExampleEntityModel>();
-            dataModel = DataModelManager.Instance.AddDataModel<HotkeyEntityModel>();
-            yield return dataModel.InitState == InitState.Inited;
+            DataModelManager.Instance.AddDataModel<HotkeyEntityModel>();
             DataModelManager.Instance.AddDataModel<LevelEntityModel>();
-            
+
+            List<DataModelBase> modelList = DataModelManager.Instance.DataModelDict.Values.ToList();
+            WaitUntil waitUntil = new WaitUntil(() => CheckDataModelInitComplete(modelList));
+            yield return waitUntil;
+
             #endregion
 
             yield return null;
@@ -123,6 +127,16 @@ namespace Company.NewApp
             node.transform.localPosition = Vector3.zero;
             node.name = name;
             return node;
+        }
+
+        private bool CheckDataModelInitComplete(List<DataModelBase> list)
+        {
+            for(int i = 0; i < list.Count; i++)
+            {
+                if (list[i].InitState != InitState.Inited)
+                    return false;
+            }
+            return true;
         }
 
         private void OnDestroy()

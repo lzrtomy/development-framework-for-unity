@@ -1,4 +1,6 @@
-﻿using Company.NewApp.Views;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Company.NewApp.Views;
 using UnityEngine;
 
 namespace Company.NewApp.Presenters
@@ -28,6 +30,28 @@ namespace Company.NewApp.Presenters
         /// 注销事件
         /// </summary>
         protected abstract void RemoveListeners();
+
+
+        protected IEnumerator IECheckPreloadUIAsset(ViewType type)
+        {
+            bool isPreload = false;
+            WaitUntil waitLoad = new WaitUntil(() => isPreload);
+
+            UIManager.Instance.CheckPreloadUIAsset(type, () => isPreload = true);
+
+            yield return waitLoad;
+        }
+
+        protected IEnumerator IECheckPreloadUIAssets(List<ViewType> typeList)
+        {
+            bool isPreload = false;
+            WaitUntil waitLoad = new WaitUntil(() => isPreload);
+
+            UIManager.Instance.CheckPreloadUIAssets(typeList, () => isPreload = true);
+
+            yield return waitLoad;
+        }
+
 
         /// <summary>
         /// 关闭UI
